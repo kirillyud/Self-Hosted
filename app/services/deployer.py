@@ -10,6 +10,7 @@ def port_is_open(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)
     result = sock.connect_ex(('127.0.0.1', port))
+    sock.close()
     return result == 0
 
 def deploy_project(name):
@@ -18,14 +19,18 @@ def deploy_project(name):
         return {'Ошибка': 'Проект не найден'}
     if project['status'] == 'running':
         return {'Ошибка': 'Проект уже запущен'}
-    process = subprocess.Popen(['python', '-m', 'http.server', '8000'])
+    process = subprocess.Popen(['python', '-m', 'http.server', project['port']])
     project['pid'] = process.pid
     project['status'] = 'starting'
     time.sleep(2)
-    if port_is_open(8000):
-        project['status'] = 'running'
-    else:
+    if process.poll() != None:
         project['status'] = 'error'
+        return {'Ошибка': 'Ошибка при запуске'}
+    else:
+        if port_is_open(project['port']):
+            project['status'] = 'running'
+        else:
+            project['status'] = 'error'
     return {'status' : project['status']}
 
 def stop_project(name):
@@ -36,8 +41,17 @@ def stop_project(name):
         return {'Ошибка': 'Проект не запущен'}
     os.kill(projects[name]['pid'], signal.SIGTERM)
     time.sleep(2)
-    project['pid'] = None
-    project['status'] = 'stopped'
+    if port_is_open(project['port']):
+        os.kill(projects[name]['pid'], signal.SIGKILL)
+        time.sleep(2)
+        if port_is_open(project['port']):
+            project['status'] = 'error'
+        else:
+            project['pid'] = None
+            project['status'] = 'stopped'
+    else:
+        project['pid'] = None
+        project['status'] = 'stopped'
     return {'status' : project['status']}
 
 

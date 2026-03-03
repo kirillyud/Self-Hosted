@@ -3,6 +3,7 @@ import subprocess
 import os
 import socket
 import time
+import shlex
 
 from app.core.state import projects
 
@@ -19,7 +20,7 @@ def deploy_project(name):
         return {'Ошибка': 'Проект не найден'}
     if project['status'] == 'running':
         return {'Ошибка': 'Проект уже запущен'}
-    process = subprocess.Popen(['python', '-m', 'http.server', project['port']])
+    process = subprocess.Popen(shlex.split(project['command']))
     project['pid'] = process.pid
     project['status'] = 'starting'
     time.sleep(2)

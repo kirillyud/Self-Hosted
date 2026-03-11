@@ -8,17 +8,19 @@ class ProjectAddItems(BaseModel):
     name: str
     port: int
     command: str
+    repo_url: str
 
 @router.post('/projects')
-async def add_projects(new_project: ProjectAddItems):
+def add_projects(new_project: ProjectAddItems):
     if new_project.name not in projects:
         projects[new_project.name] = {"status": "stopped",
                                       "pid": None,
                                       "port": new_project.port,
-                                      "command": new_project.command}
+                                      "command": new_project.command,
+                                      'repo_url': new_project.repo_url}
         return {'success': True}
     else:
-        raise HTTPException(status_code=400, detail='Уже существует проект с таким названием')
+        raise HTTPException(status_code=400, detail='Проект с таким названием уже существует')
 
 @router.get('/projects')
 def show_projects():
@@ -29,4 +31,4 @@ def get_projects(project_name):
     for project in projects:
         if project_name == project:
             return projects[project_name]
-        return HTTPException(status_code=404, detail='Проект с таким названием не найден')
+    return HTTPException(status_code=404, detail='Проект с таким названием не найден')

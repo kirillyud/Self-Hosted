@@ -4,6 +4,7 @@ import os
 import socket
 import time
 import shlex
+import pathlib
 
 from app.core.state import projects
 
@@ -16,11 +17,17 @@ def port_is_open(port):
 
 def deploy_project(name):
     project = projects.get(name)
+    path = pathlib.Path(f'projects/{name}')
     if not project:
         return {'Ошибка': 'Проект не найден'}
     if project['status'] == 'running':
         return {'Ошибка': 'Проект уже запущен'}
-    process = subprocess.Popen(shlex.split(project['command']))
+    if path.exists():
+        if path.is_dir() and pathlib.Path(f'projects/{name}/.git').exists():
+            subprocess.run(['git', 'pull'], cwd=path)
+    else:
+        subprocess.run(['git', 'clone', project['repo_url'], path])
+    process = subprocess.Popen(shlex.split(project['command']), cwd=path)
     project['pid'] = process.pid
     project['status'] = 'starting'
     time.sleep(2)

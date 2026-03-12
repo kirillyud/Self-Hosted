@@ -5,6 +5,7 @@ import socket
 import time
 import shlex
 import pathlib
+import shutil
 
 from app.core.state import projects
 
@@ -24,7 +25,8 @@ def deploy_project(name):
         return {'Ошибка': 'Проект уже запущен'}
     if path.exists():
         if path.is_dir() and pathlib.Path(f'projects/{name}/.git').exists():
-            subprocess.run(['git', 'pull'], cwd=path)
+            shutil.rmtree(path, ignore_errors=True)
+            subprocess.run(['git', 'clone', project['repo_url'], path])
     else:
         subprocess.run(['git', 'clone', project['repo_url'], path])
     process = subprocess.Popen(shlex.split(project['command']), cwd=path)

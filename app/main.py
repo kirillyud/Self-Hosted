@@ -3,7 +3,10 @@ import uvicorn
 
 from app.routes.projects import router as projects_router
 from app.routes.deploy import router as control_router
+from database.database import init_db
 app = FastAPI()
+
+init_db()
 
 @app.get('/')
 def start_page():

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.core.state import projects
 from pydantic import BaseModel
-
+from database.database import add_project_db
 router = APIRouter()
 
 class ProjectAddItems(BaseModel):
@@ -13,11 +13,12 @@ class ProjectAddItems(BaseModel):
 @router.post('/projects')
 def add_projects(new_project: ProjectAddItems):
     if new_project.name not in projects:
-        projects[new_project.name] = {"status": "stopped",
-                                      "pid": None,
-                                      "port": new_project.port,
-                                      "command": new_project.command,
-                                      'repo_url': new_project.repo_url}
+        add_project_db(
+            new_project.name,
+            new_project.repo_url,
+            new_project.command,
+            new_project.port
+        )
         return {'success': True}
     else:
         raise HTTPException(status_code=400, detail='Проект с таким названием уже существует')

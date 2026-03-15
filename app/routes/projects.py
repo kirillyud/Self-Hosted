@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.core.state import projects
 from pydantic import BaseModel
-from database.database import add_project_db
+from database.database import add_project_db, get_projects_db, get_project_db
 router = APIRouter()
 
 class ProjectAddItems(BaseModel):
@@ -25,11 +25,11 @@ def add_projects(new_project: ProjectAddItems):
 
 @router.get('/projects')
 def show_projects():
-    return projects
+    return get_projects_db()
 
 @router.get('/projects/{project_name}')
 def get_projects(project_name):
-    for project in projects:
-        if project_name == project:
-            return projects[project_name]
+    data = get_project_db(project_name)
+    if data:
+        return data
     return HTTPException(status_code=404, detail='Проект с таким названием не найден')

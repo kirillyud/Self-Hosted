@@ -8,6 +8,7 @@ import pathlib
 import shutil
 
 from app.core.state import projects
+from database.database import get_project_db, update_project_db
 
 def port_is_open(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,7 +18,7 @@ def port_is_open(port):
     return result == 0
 
 def deploy_project(name):
-    project = projects.get(name)
+    project = get_project_db(name)
     path = pathlib.Path(f'projects/{name}')
     if not project:
         return {'Ошибка': 'Проект не найден'}
@@ -30,43 +31,43 @@ def deploy_project(name):
     else:
         subprocess.run(['git', 'clone', project['repo_url'], path])
     process = subprocess.Popen(shlex.split(project['command']), cwd=path)
-    project['pid'] = process.pid
-    project['status'] = 'starting'
+    update_project_db(name, process.pid, "starting")
     time.sleep(2)
     if process.poll() != None:
-        project['status'] = 'error'
+        update_project_db(name, process.pid, "error")
         return {'Ошибка': 'Ошибка при запуске'}
     else:
         if port_is_open(project['port']):
-            project['status'] = 'running'
+            update_project_db(name, process.pid, "running")
+            return {'status': 'running'}
         else:
-            project['status'] = 'error'
-    return {'status' : project['status']}
+            update_project_db(name, process.pid, "error")
+            return {'Ошибка': 'Ошибка при запуске'}
 
 def stop_project(name):
-    project = projects.get(name)
+    project = get_project_db(name)
     if not project:
         return {'Ошибка': 'Проект не найден'}
     if project['status'] != 'running':
         return {'Ошибка': 'Проект не запущен'}
-    os.kill(projects[name]['pid'], signal.SIGTERM)
+    os.kill(project['pid'], signal.SIGTERM)
     time.sleep(2)
     if port_is_open(project['port']):
-        os.kill(projects[name]['pid'], signal.SIGKILL)
+        os.kill(project['pid'], signal.SIGKILL)
         time.sleep(2)
         if port_is_open(project['port']):
-            project['status'] = 'error'
+            update_project_db(name, project['pid'], "error")
+            return {'status': 'error'}
         else:
-            project['pid'] = None
-            project['status'] = 'stopped'
+            update_project_db(name, None, "stopped")
+            return {'status': 'stopped'}
     else:
-        project['pid'] = None
-        project['status'] = 'stopped'
-    return {'status' : project['status']}
+        update_project_db(name, None, "stopped")
+        return {'status': 'stopped'}
 
 
 def get_status(name):
-    project = projects.get(name)
+    project = get_project_db(name)
     if not project:
         return {'Ошибка': 'Проект не найден'}
     return {'status' : project['status']}

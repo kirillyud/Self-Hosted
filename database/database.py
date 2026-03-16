@@ -7,17 +7,22 @@ def connect_db():
 def init_db():
     connection = connect_db()
     per = connection.cursor()
-    per.execute("CREATE TABLE IF NOT EXISTS projects(name TEXT,repo_url TEXT, command TEXT, port INTEGER, status TEXT, pid INTEGER)")
+    per.execute("CREATE TABLE IF NOT EXISTS projects(name TEXT UNIQUE,repo_url TEXT, command TEXT, port INTEGER, status TEXT, pid INTEGER)")
     connection.commit()
     connection.close()
     
 def add_project_db(name, repo_url, command, port):
     connection = connect_db()
     per = connection.cursor()
-    per.execute("INSERT INTO projects VALUES (?, ?, ?, ?, ?, ?)",
+    try:
+        per.execute("INSERT INTO projects VALUES (?, ?, ?, ?, ?, ?)",
                 (name, repo_url, command, port, "stopped", None))
-    connection.commit()
-    connection.close()
+        connection.commit()
+        connection.close()
+        return {'success': True}
+    except sqlite3.Error as er:
+        connection.close()
+        return {'success': False, 'error': er}
 
 def get_projects_db():
     connection = connect_db()
@@ -46,5 +51,12 @@ def update_project_db(name, pid, status):
     connection = connect_db()
     per = connection.cursor()
     per.execute("UPDATE projects SET pid = ?, status = ? WHERE name = ?", (pid, status, name,  ))
+    connection.commit()
+    connection.close()
+
+def delete_project_db(name):
+    connection = connect_db()
+    per = connection.cursor()
+    per.execute("DELETE FROM projects WHERE name = ?", (name, ))
     connection.commit()
     connection.close()

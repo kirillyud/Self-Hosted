@@ -30,7 +30,15 @@ def get_projects_db():
     per.execute("SELECT * FROM projects")
     datas = per.fetchall()
     connection.close()
-    return datas
+    list_of_projects = []
+    for data in datas:
+        list_of_projects.append({'name': data[0],
+            'repo_url': data[1],
+            'command': data[2],
+            'port': data[3],
+            'status': data[4],
+            'pid': data[5]})
+    return list_of_projects
 
 def get_project_db(name):
     connection = connect_db()

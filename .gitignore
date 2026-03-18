@@ -5,3 +5,5 @@ __pycache__/
 projects/
 logs/
 *.db
+logs/*
+!logs/.gitkeep

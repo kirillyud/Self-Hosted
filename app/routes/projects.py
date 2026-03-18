@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from app.core.state import projects
 from pydantic import BaseModel
 from database.database import add_project_db, get_projects_db, get_project_db, delete_project_db
-from app.services.deployer import get_status
+from app.services.deployer import get_status, delete_project_service
 router = APIRouter()
 
 class ProjectAddItems(BaseModel):
@@ -30,12 +29,13 @@ def get_projects(project_name):
     data = get_project_db(project_name)
     if data:
         return data
-    return HTTPException(status_code=404, detail='Проект с таким названием не найден')
+    raise HTTPException(status_code=404, detail='Проект с таким названием не найден')
 
 @router.delete('/projects/{project_name}')
 def delete_project(project_name):
-    if get_status(project_name) != 'running':
-        delete_project_db(project_name)
-        return {'success': True}
-    else:
-        return {'Ошибка': 'Проект запущен'}
+    return delete_project_service(project_name)
+
+@router.get('/projects/{project_name}/logs')
+def get_logs_project(project_name):
+    f = open(f'logs/{project_name}.log')
+    return ''.join(f.readlines()[-20:])

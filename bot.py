@@ -15,7 +15,6 @@ def check_status(name):
 
 @bot.message_handler(commands=['start'])
 def handle_start(message):
-    re_msg = ''
     data = resp_json('http://127.0.0.1:8000/projects')
     markup = types.InlineKeyboardMarkup()
     for project in data:

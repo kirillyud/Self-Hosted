@@ -74,17 +74,12 @@ def get_status(name):
 
 def delete_project_service(name):
     project = get_project_db(name)
+    if project is None:
+        return {"success": False}
     path = pathlib.Path(f'projects/{name}')
     if project['status'] == 'running':
         stop_project(name)
-        if path.is_dir():
-            shutil.rmtree(path, ignore_errors=True)
-            delete_project_db(name)
-            return {'success': True}
-        return {'success': False}
-    else:
-        if path.is_dir():
-            shutil.rmtree(path, ignore_errors=True)
-            delete_project_db(name)
-            return {'success': True}
-        return {'success': False}
+    if path.is_dir():
+        shutil.rmtree(path, ignore_errors=True)
+    delete_project_db(name)
+    return {'success': True}

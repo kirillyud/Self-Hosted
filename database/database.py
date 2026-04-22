@@ -43,7 +43,7 @@ def get_projects_db():
 def get_project_db(name):
     connection = connect_db()
     per = connection.cursor()
-    per.execute("SELECT * FROM projects WHERE name = ?", (name, ))
+    per.execute("SELECT * FROM projects WHERE TRIM(name) = TRIM(?)", (name,))
     datas = per.fetchone()
     connection.close()
     if not datas:

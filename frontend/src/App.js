@@ -52,45 +52,61 @@ function App() {
     setLogs(data);
   };
 
-  return (
-    <div style={{ background: "#111", color: "white", minHeight: "100vh", padding: "20px" }}>
-      <h1>Projects</h1>
+  const inputStyle = {
+    padding: "8px",
+    marginRight: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc"
+  };
 
-      <div style={{ marginBottom: "20px" }}>
-        <input placeholder="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <input placeholder="repo" value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} />
-        <input placeholder="port" value={form.port} onChange={(e) => setForm({ ...form, port: e.target.value })} />
-        <input placeholder="command" value={form.command} onChange={(e) => setForm({ ...form, command: e.target.value })} />
-        <button onClick={addProject}>add</button>
+  const buttonStyle = {
+    padding: "6px 10px",
+    marginRight: "6px",
+    borderRadius: "6px",
+    border: "none",
+    cursor: "pointer"
+  };
+
+  return (
+    <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "30px", fontFamily: "sans-serif" }}>
+      <h1 style={{ marginBottom: "20px" }}>Projects</h1>
+
+      <div style={{ marginBottom: "25px" }}>
+        <input style={inputStyle} placeholder="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <input style={inputStyle} placeholder="repo" value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} />
+        <input style={inputStyle} placeholder="port" value={form.port} onChange={(e) => setForm({ ...form, port: e.target.value })} />
+        <input style={inputStyle} placeholder="command" value={form.command} onChange={(e) => setForm({ ...form, command: e.target.value })} />
+        <button style={{ ...buttonStyle, background: "#4CAF50", color: "white" }} onClick={addProject}>add</button>
       </div>
 
       {projects.map((p) => (
         <div key={p.name} style={{
-          background: "#222",
-          padding: "10px",
-          marginBottom: "10px",
+          background: "white",
+          padding: "15px",
+          marginBottom: "12px",
           borderRadius: "10px",
           display: "flex",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
         }}>
           <div>
-            <div>{p.name}</div>
-            <div style={{ color: "gray" }}>{p.status}</div>
+            <div style={{ fontWeight: "600" }}>{p.name}</div>
+            <div style={{ color: "gray", fontSize: "14px" }}>{p.status}</div>
           </div>
 
           <div>
-            <button onClick={() => deploy(p.name)}>deploy</button>
-            <button onClick={() => stop(p.name)}>stop</button>
-            <button onClick={() => remove(p.name)}>delete</button>
-            <button onClick={() => getLogs(p.name)}>logs</button>
+            <button style={{ ...buttonStyle, background: "#2196F3", color: "white" }} onClick={() => deploy(p.name)}>deploy</button>
+            <button style={{ ...buttonStyle, background: "#FF9800", color: "white" }} onClick={() => stop(p.name)}>stop</button>
+            <button style={{ ...buttonStyle, background: "#f44336", color: "white" }} onClick={() => remove(p.name)}>delete</button>
+            <button style={{ ...buttonStyle, background: "#555", color: "white" }} onClick={() => getLogs(p.name)}>logs</button>
           </div>
         </div>
       ))}
 
       {logs && (
-        <div style={{ marginTop: "20px", background: "#000", padding: "10px" }}>
-          <h3>Logs</h3>
-          <pre>{logs}</pre>
+        <div style={{ marginTop: "25px", background: "white", padding: "15px", borderRadius: "10px", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <h3 style={{ marginBottom: "10px" }}>Logs</h3>
+          <pre style={{ background: "#eee", padding: "10px", borderRadius: "6px", overflowX: "auto" }}>{logs}</pre>
         </div>
       )}
     </div>
